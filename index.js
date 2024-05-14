@@ -306,7 +306,9 @@ export default class Trystereo extends EventTarget {
             // this.dispatchEvent(new CustomEvent('error', {detail: {id: channel.id, ev: data}}))
             let msg
             try {
+                console.log('before', typeof(data), data)
                 msg = JSON.parse(data)
+                console.log('after', typeof(msg), msg)
             } catch (error) {
                 console.error(error)
                 return
