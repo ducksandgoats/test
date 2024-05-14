@@ -274,6 +274,7 @@ export default class Trystereo extends EventTarget {
             console.log(e)
         }
         const handleClose = (e) => {
+            console.log(11)
             console.log(e)
             // this.relay = false
             handleEvent()
@@ -292,6 +293,7 @@ export default class Trystereo extends EventTarget {
     handleChannel(channel){
         console.log(7)
         const onConnect = () => {
+            console.log(8)
             // this.dispatchEvent(new CustomEvent('connect', {detail: channel}))
             if(!this.channels.has(channel.id)){
                 this.channels.set(channel.id, channel)
@@ -300,6 +302,7 @@ export default class Trystereo extends EventTarget {
             channel.emit('connected', channel)
         }
         const onData = (data) => {
+            console.log(9)
             // this.dispatchEvent(new CustomEvent('error', {detail: {id: channel.id, ev: data}}))
             let msg
             try {
@@ -413,6 +416,7 @@ export default class Trystereo extends EventTarget {
             console.error(channel.id, err)
         }
         const onClose = () => {
+            console.log(10)
             // this.dispatchEvent(new CustomEvent('close', {detail: channel}))
             onHandle()
             if(this.channels.has(channel.id)){
