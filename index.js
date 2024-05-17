@@ -25,8 +25,9 @@ export default class Trystereo extends EventTarget {
         this.announceSeconds = opts.announceSeconds || 33
         this.maxAnnounceSecs = opts.maxAnnounceSecs || 120
         this.ws()
-        this.timerWS = setInterval(() => {this.ws()}, 120000)
-        this.timerWRTC = setInterval(() => {this.wrtc()}, 60000)
+        this.timerWS = setInterval(() => {this.ws()}, this.announceSeconds)
+        this.alternativeSeconds = 60000
+        this.timerWRTC = setInterval(() => {this.wrtc()}, this.alternativeSeconds)
     }
     initWRTC(){
         if(this.channels.size < this.limit){
@@ -231,11 +232,11 @@ export default class Trystereo extends EventTarget {
                 }
                 return
             }
-            // if(message.interval && message.interval > this.announceSeconds && message.interval <= this.maxAnnounceSecs) {
-            //     clearInterval(this.announceInterval)
-            //     this.announceSecs = message.interval
-            //     this.announceInterval = setInterval(this.initWS, this.announceSecs * 1000)
-            // }
+            if(message.interval && message.interval > this.announceSeconds && message.interval <= this.maxAnnounceSecs) {
+                clearInterval(this.timerWS)
+                this.announceSecs = message.interval * 1000
+                this.announceInterval = setInterval(this.ws, this.announceSecs)
+            }
             if (message.offer && message.offer_id) {
                 console.log(5)
                 if (this.channels.has(msgPeerId)){
