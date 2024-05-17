@@ -22,8 +22,8 @@ export default class Trystereo extends EventTarget {
         this.channels = new Map()
         this.socket = null
         // this.relay = false
-        this.announceSeconds = opts.announceSeconds || 33
-        this.maxAnnounceSecs = opts.maxAnnounceSecs || 120
+        this.announceSeconds = opts.announceSeconds || 33 * 1000
+        this.maxAnnounceSecs = opts.maxAnnounceSecs || 120 * 1000
         this.ws()
         this.timerWS = setInterval(() => {this.ws()}, this.announceSeconds)
         this.alternativeSeconds = 60000
