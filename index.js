@@ -42,9 +42,7 @@ export default class Trystereo extends EventTarget {
                     testChannel.relay = false
                     testChannel.timer = setTimeout(() => {
                         // clearTimeout(testChannel.timer)
-                        testChannel.destroy((err) => {
-                            console.error(err)
-                        })
+                        testChannel.destroy(new Error('removing offer by timer'))
                         this.rtcOffers.delete(testID)
                     }, 60000)
                     this.rtcOffers.set(testID, testChannel)
