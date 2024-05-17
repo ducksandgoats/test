@@ -313,8 +313,8 @@ export default class Trystereo extends EventTarget {
             let msg
             try {
                 console.log('before', typeof(data), data)
-                console.log(data.toString())
-                msg = JSON.parse(data.toString())
+                console.log(new TextDecoder("utf-8").decode(data))
+                msg = JSON.parse(new TextDecoder("utf-8").decode(data))
                 console.log('after', typeof(msg), msg)
             } catch (error) {
                 console.error(error)
