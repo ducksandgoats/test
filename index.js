@@ -295,6 +295,12 @@ export default class Trystereo extends EventTarget {
         const onConnect = () => {
             console.log(8)
             // this.dispatchEvent(new CustomEvent('connect', {detail: channel}))
+            if(this.rtcOffers.has(channel.offer_id)){
+                this.rtcOffers.delete(channel.offer_id)
+            }
+            if(this.wsOffers.has(channel.offer_id)){
+                this.wsOffers.delete(channel.offer_id)
+            }
             if(!this.channels.has(channel.id)){
                 this.channels.set(channel.id, channel)
             }
