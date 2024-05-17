@@ -26,7 +26,7 @@ export default class Trystereo extends EventTarget {
         this.maxAnnounceSecs = opts.maxAnnounceSecs || 120 * 1000
         this.ws()
         this.timerWS = setInterval(() => {this.ws()}, this.announceSeconds)
-        this.alternativeSeconds = 60000
+        this.alternativeSeconds = 60 * 1000
         this.timerWRTC = setInterval(() => {this.wrtc()}, this.alternativeSeconds)
     }
     initWRTC(){
@@ -236,6 +236,9 @@ export default class Trystereo extends EventTarget {
                 clearInterval(this.timerWS)
                 this.announceSecs = message.interval * 1000
                 this.timerWS = setInterval(() => {this.ws()}, this.announceSecs)
+                clearInterval(this.timerWRTC)
+                this.alternativeSeconds = this.announceSecs / 2
+                this.timerWRTC = setInterval(() => {this.wrtc()}, this.alternativeSeconds)
             }
             if (message.offer && message.offer_id) {
                 console.log(5)
