@@ -235,7 +235,7 @@ export default class Trystereo extends EventTarget {
             if(message.interval && message.interval > this.announceSeconds && message.interval <= this.maxAnnounceSecs) {
                 clearInterval(this.timerWS)
                 this.announceSecs = message.interval * 1000
-                this.announceInterval = setInterval(this.ws, this.announceSecs)
+                this.timerWS = setInterval(() => {this.ws()}, this.announceSecs)
             }
             if (message.offer && message.offer_id) {
                 console.log(5)
