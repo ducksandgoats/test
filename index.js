@@ -41,7 +41,7 @@ export default class Trystereo extends EventTarget {
                     testChannel.channels = new Set()
                     testChannel.relay = false
                     testChannel.timer = setTimeout(() => {
-                        clearTimeout(testChannel.timer)
+                        // clearTimeout(testChannel.timer)
                         testChannel.destroy((err) => {
                             console.error(err)
                         })
