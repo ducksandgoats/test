@@ -454,6 +454,7 @@ export default class Trystereo extends EventTarget {
                 num++
             }
         })
+        console.log({half: num / check.size < 0.50, data: arr})
         return {half: num / check.size < 0.50, data: arr}
     }
     sendData(data){}
