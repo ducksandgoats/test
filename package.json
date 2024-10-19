@@ -17,6 +17,6 @@
     "@sveltestrap/sveltestrap": "^6.2.7",
     "dexie": "^4.0.8",
     "gun": "github:amark/gun",
-    "relay-to-relay": "^1.0.0"
+    "relay-to-relay": "^1.0.1"
   }
 }
