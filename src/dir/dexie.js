@@ -4,6 +4,30 @@ import {Dexie} from 'dexie'
 export default function(opts){
 
     const debug = opts.debug
+
+    function makeUser(){
+        if(opts.user){
+            let test = localStorage.getItem('user')
+            if(test){
+                return test
+            } else {
+                test = crypto.randomUUID()
+                localStorage.setItem('user', test)
+                return test
+            }
+        } else {
+            let test = sessionStorage.getItem('user')
+            if(test){
+                return test
+            } else {
+                test = crypto.randomUUID()
+                sessionStorage.setItem('user', test)
+                return test
+            }
+        }
+    }
+
+    const user = makeUser()
     
     function id(){return crypto.randomUUID()}
     
@@ -14,46 +38,48 @@ export default function(opts){
         console.log('name', db.name)
     }
     db.version(opts.version).stores(opts.schema)
-    
-    function creating(table){
-        return function created(key, value, transaction){
-            value.stamp = Date.now()
-            if(debug){
-                console.log('Sending Data: ', typeof(value), value)
-            }
-            client.onSend(JSON.stringify({name: table, key, value, transaction: {db: db.name, active: transaction.active}, status: 'creating'}))
-        }
-    }
-    
-    function updating(table){
-        return function updated(mod, key, value, transaction){
-            value.edit = Date.now()
-            if(debug){
-                console.log('Sending Data: ', typeof(value), value)
-            }
-            client.onSend(JSON.stringify({name: table, mod, key, value, transaction: {db: db.name, active: transaction.active}, status: 'updating'}))
-        }
-    }
-    
-    function deleting(table){
-        return function deleted(key, value, transaction){
-            if(debug){
-                console.log('Sending Data: ', typeof(value), value)
-            }
-            client.onSend(JSON.stringify({name: table, key, value, transaction: {db: db.name, active: transaction.active}, status: 'deleting'}))
-        }
-    }
-    
+
     db.tables.forEach(async (table) => {
-        table.hook('creating', creating(table.name))
-        table.hook('updating', updating(table.name))
-        table.hook('deleting', deleting(table.name))
         const useStamp = await table.toCollection().last()
         const useEdit = await table.toCollection().last()
         if(useStamp?.stamp || useEdit?.edit){
             client.onSend(JSON.stringify({name: table.name, stamp: useStamp?.stamp, edit: useEdit?.edit, session: true}))
         }
     })
+
+    async function add(name, data){
+        if(db[name]){
+            if(!data.stamp){
+                data.stamp = Date.now()
+            }
+            if(!data.user){
+                data.user = user
+            }
+            await db[name].add(data)
+            client.onSend(JSON.stringify({name, data, user, status: 'add'}))
+        }
+    }
+
+    async function sub(name, prop){
+        if(db[name]){
+            const test = db[name].get(prop)
+            if(test && test.user && test.user === user){
+                await db[name].delete(prop)
+                client.onSend(JSON.stringify({name, prop, user, status: 'sub'}))
+            }
+        }
+    }
+
+    async function edit(name, prop, data){
+        if(db[name]){
+            const test = db[name].get(prop)
+            if(test && test.user && test.user === user){
+                data.edit = Date.now()
+                await db[name].update(prop, data)
+                client.onSend(JSON.stringify({name, prop, data, user, status: 'sub'}))
+            }
+        }
+    }
     
     const connect = (chan) => {console.log('connected: ' + chan)}
     const err = (e, chan) => {console.error(e, chan)}
@@ -67,14 +93,17 @@ export default function(opts){
                 console.log('Received Message: ', typeof(data), data)
             }
             const datas = JSON.parse(data)
+            if(datas.user && datas.user === user){
+                return
+            }
             if(db[datas.name]){
                 if(datas.status){
-                    if(datas.status === 'creating'){
-                        await db[datas.name].add(datas.value)
-                    } else if(datas.status === 'updating'){
-                        await db[datas.name].put({...datas.value, ...datas.mod})
-                    } else if(datas.status === 'deleting'){
-                        await db[datas.name].delete(datas.key)
+                    if(datas.status === 'add'){
+                        await db[datas.name].add(datas.data)
+                    } else if(datas.status === 'edit'){
+                        await db[datas.name].update(datas.prop, datas.data)
+                    } else if(datas.status === 'sub'){
+                        await db[datas.name].delete(datas.prop)
                     } else {
                         return
                     }
@@ -89,14 +118,30 @@ export default function(opts){
                         client.onSend(JSON.stringify(datas), iden)
                     } else {
                         if(datas.stamp){
-                            datas.stamp.forEach((rec) => {
-                                db[datas.name].put(rec)
-                            })
+                            for(const check of datas.stamp){
+                                try {
+                                    if(check.user && check.user === user){
+                                        continue
+                                    } else {
+                                        await db[datas.name].put(check)
+                                    }
+                                } catch {
+                                    
+                                }
+                            }
                         }
                         if(datas.edit){
-                            datas.edit.forEach((rec) => {
-                                db[datas.name].put(rec)
-                            })
+                            for(const checking of datas.edit){
+                                try {
+                                    if(checking.user && checking.user === user){
+                                        continue
+                                    } else {
+                                        await db[datas.name].put(checking)
+                                    }
+                                } catch {
+                                    
+                                }
+                            }
                         }
                     }
                 }
@@ -116,5 +161,5 @@ export default function(opts){
         db.close()
     }
 
-    return {id, db, client, quit}
+    return {id, db, client, quit, crud: {add, edit, sub}}
 }
