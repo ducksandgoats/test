@@ -40,8 +40,8 @@ export default function(opts){
     db.version(opts.version).stores(opts.schema)
 
     db.tables.forEach(async (table) => {
-        const useStamp = await table.where('stamp').below(Date.now()).last()
-        const useEdit = await table.where('edit').below(Date.now()).last()
+        const useStamp = await table.where('stamp').notEqual(0).last()
+        const useEdit = await table.where('edit').notEqual(0).last()
         if(useStamp?.stamp || useEdit?.edit){
             client.onSend(JSON.stringify({name: table.name, stamp: useStamp?.stamp, edit: useEdit?.edit, session: true}))
         }
@@ -68,6 +68,7 @@ export default function(opts){
             if(!data.id){
                 data.id = crypto.randomUUID()
             }
+            data.edit = 0
             await db[name].add(data)
             client.onSend(JSON.stringify({name, data, user, stamp: data.stamp, status: 'add'}))
         }
