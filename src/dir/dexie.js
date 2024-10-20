@@ -32,6 +32,17 @@ export default function(opts){
     function id(){return crypto.randomUUID()}
     
     const client = new Client(opts.url, opts.hash, opts.rtor)
+
+    for(const records in opts.schema){
+        const arr = opts.schema[records].split(',')
+        if(!arr.includes('stamp')){
+            arr.push('stamp')
+        }
+        if(!arr.includes('edit')){
+            arr.push('edit')
+        }
+        opts.schema[records] = arr.join(',')
+    }
     
     const db = new Dexie(opts.name, {})
     if(debug){
