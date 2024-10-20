@@ -80,6 +80,18 @@ export default function(opts){
             }
         }
     }
+
+    async function force(name, prop){
+        if(db[name]){
+            await db[name].delete(prop)
+        }
+    }
+
+    async function clear(name){
+        if(db[name]){
+            await db[name].clear()
+        }
+    }
     
     const connect = (chan) => {console.log('connected: ' + chan)}
     const err = (e, chan) => {console.error(e, chan)}
