@@ -2,17 +2,25 @@ import {Client} from 'relay-to-relay'
 import {Dexie} from 'dexie'
 
 export default function(opts){
+
+    const debug = opts.debug
     
     function id(){return crypto.randomUUID()}
     
-    const client = opts.client || new Client(opts.url, opts.hash, opts.rtor)
+    const client = new Client(opts.url, opts.hash, opts.rtor)
     
     const db = new Dexie(opts.name, {})
+    if(debug){
+        console.log('name', db.name)
+    }
     db.version(opts.version).stores(opts.schema)
     
     function creating(table){
         return function created(key, value, transaction){
             value.stamp = Date.now()
+            if(debug){
+                console.log('Sending Data: ', typeof(value), value)
+            }
             client.onSend(JSON.stringify({name: table, key, value, transaction: {db: db.name, active: transaction.active}, status: 'creating'}))
         }
     }
@@ -20,12 +28,18 @@ export default function(opts){
     function updating(table){
         return function updated(mod, key, value, transaction){
             value.edit = Date.now()
+            if(debug){
+                console.log('Sending Data: ', typeof(value), value)
+            }
             client.onSend(JSON.stringify({name: table, mod, key, value, transaction: {db: db.name, active: transaction.active}, status: 'updating'}))
         }
     }
     
     function deleting(table){
         return function deleted(key, value, transaction){
+            if(debug){
+                console.log('Sending Data: ', typeof(value), value)
+            }
             client.onSend(JSON.stringify({name: table, key, value, transaction: {db: db.name, active: transaction.active}, status: 'deleting'}))
         }
     }
@@ -49,6 +63,9 @@ export default function(opts){
     client.on('disconnect', disconnect)
     const message = async (data, iden) => {
         try {
+            if(debug){
+                console.log('Received Message: ', typeof(data), data)
+            }
             const datas = JSON.parse(data)
             if(db[datas.name]){
                 if(datas.status){

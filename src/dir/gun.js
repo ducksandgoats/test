@@ -13,7 +13,7 @@ export default function(opts){
     }
     let urlProxy
 
-    const channel = opts.client || new Client(opts.url, opts.hash, opts.rtor)
+    const channel = new Client(opts.url, opts.hash, opts.rtor)
 
     const connect = (chan) => {console.log('connected: ' + chan.id)}
     const err = (e) => {console.error(e.id, e)}
