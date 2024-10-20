@@ -13,7 +13,7 @@
     test = test + 1
     gun.get(test + 'testing').put({test: 'works'}).once(console.log)
     database.db.working.add({id: `${test}${Date.now()}`, connection: 'connected', try: 'tried', test})
-  }, 10000)
+  }, 5000)
 </script>
 
 <main>
