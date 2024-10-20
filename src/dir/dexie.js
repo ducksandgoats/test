@@ -42,9 +42,7 @@ export default function(opts){
     db.tables.forEach(async (table) => {
         const useStamp = await table.where('stamp').notEqual(0).last()
         const useEdit = await table.where('edit').notEqual(0).last()
-        if(useStamp?.stamp || useEdit?.edit){
-            client.onSend(JSON.stringify({name: table.name, stamp: useStamp?.stamp, edit: useEdit?.edit, session: true}))
-        }
+        client.onSend(JSON.stringify({name: table.name, stamp: useStamp?.stamp, edit: useEdit?.edit, session: true}))
     })
 
     const updates = new Map()
