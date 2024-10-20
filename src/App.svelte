@@ -11,8 +11,8 @@
   let test = 0
   setInterval(() => {
     test = test + 1
-    gun.get(test + 'testing').put({test: 'works'}).once(console.log)
-    database.db.working.add({id: `${test}${Date.now()}`, connection: 'connected', try: 'tried', test})
+    gun.get('testing' + test).put({test: 'works'}).once(console.log)
+    database.crud.add('working', {id: `${test}${Date.now()}`, connection: 'connected', try: 'tried', test})
   }, 5000)
 </script>
 

@@ -40,8 +40,8 @@ export default function(opts){
     db.version(opts.version).stores(opts.schema)
 
     db.tables.forEach(async (table) => {
-        const useStamp = await table.toCollection().last()
-        const useEdit = await table.toCollection().last()
+        const useStamp = await table.where('stamp').below(Date.now()).last()
+        const useEdit = await table.where('edit').below(Date.now()).last()
         if(useStamp?.stamp || useEdit?.edit){
             client.onSend(JSON.stringify({name: table.name, stamp: useStamp?.stamp, edit: useEdit?.edit, session: true}))
         }
