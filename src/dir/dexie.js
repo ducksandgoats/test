@@ -89,7 +89,7 @@ export default function(opts){
             if(test && test.user && test.user === user){
                 data.edit = Date.now()
                 await db[name].update(prop, data)
-                client.onSend(JSON.stringify({name, prop, data, id: test.id, user, edit: data.edit, status: 'edit'}))
+                client.onSend(JSON.stringify({name, prop, data, iden: test.iden, user, edit: data.edit, status: 'edit'}))
             }
         }
     }
@@ -140,12 +140,12 @@ export default function(opts){
                         if(updates.has(datas.id)){
                             const test = updates.get(datas.id)
                             if(datas.edit > test){
-                                updates.set(datas.id, datas.edit)
+                                updates.set(datas.iden, datas.edit)
                                 await db[datas.name].update(datas.prop, datas.data)
                                 client.onMesh(data, iden)
                             }
                         } else {
-                            updates.set(datas.id, datas.edit)
+                            updates.set(datas.iden, datas.edit)
                             await db[datas.name].update(datas.prop, datas.data)
                             client.onMesh(data, iden)
                         }
