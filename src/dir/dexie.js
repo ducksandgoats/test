@@ -74,8 +74,8 @@ export default function(opts){
             if(!data.user){
                 data.user = user
             }
-            if(!data.id){
-                data.id = crypto.randomUUID()
+            if(!data.iden){
+                data.iden = crypto.randomUUID()
             }
             data.edit = 0
             await db[name].add(data)
