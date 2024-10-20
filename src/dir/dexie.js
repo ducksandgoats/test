@@ -153,12 +153,12 @@ export default function(opts){
                         datas.session = false
                         client.onSend(JSON.stringify(datas), iden)
                     } else {
-                        const hasStamp = await db[datas.name].toCollection().last()
-                        const hasEdit = await db[datas.name].toCollection().last()
-                        const useStamp = hasStamp || {}
-                        const useEdit = hasEdit || {}
-                        const stamps = useStamp.stamp ? datas.stamp.filter((e) => {return e.stamp > useStamp.stamp}) : datas.stamp
-                        const edits = useEdit.edit ? datas.edit.filter((e) => {return e.edit > useEdit.edit}) : datas.edit
+                        const hasStamp = await db[datas.name].where('stamp').notEqual(0).last()
+                        const hasEdit = await db[datas.name].where('edit').notEqual(0).last()
+                        const useStamp = hasStamp?.stamp || 0
+                        const useEdit = hasEdit?.edit || 0
+                        const stamps = useStamp ? datas.stamp.filter((e) => {return e.stamp > useStamp}) : datas.stamp
+                        const edits = useEdit ? datas.edit.filter((e) => {return e.edit > useEdit}) : datas.edit
                         for(const stamp of stamps){
                             try {
                                 if(stamp.user && stamp.user === user){
