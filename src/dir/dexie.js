@@ -47,6 +47,16 @@ export default function(opts){
         }
     })
 
+    const updates = new Map()
+
+    const routine = setInterval(() => {
+        for(const [prop, update] of updates.entries()){
+            if((Date.now() - update) > 900000){
+                updates.delete(prop)
+            }
+        }
+    }, 180000)
+
     async function add(name, data){
         if(db[name]){
             if(!data.stamp){
@@ -55,18 +65,11 @@ export default function(opts){
             if(!data.user){
                 data.user = user
             }
-            await db[name].add(data)
-            client.onSend(JSON.stringify({name, data, user, status: 'add'}))
-        }
-    }
-
-    async function sub(name, prop){
-        if(db[name]){
-            const test = db[name].get(prop)
-            if(test && test.user && test.user === user){
-                await db[name].delete(prop)
-                client.onSend(JSON.stringify({name, prop, user, status: 'sub'}))
+            if(!data.id){
+                data.id = crypto.randomUUID()
             }
+            await db[name].add(data)
+            client.onSend(JSON.stringify({name, data, user, stamp: data.stamp, status: 'add'}))
         }
     }
 
@@ -76,7 +79,17 @@ export default function(opts){
             if(test && test.user && test.user === user){
                 data.edit = Date.now()
                 await db[name].update(prop, data)
-                client.onSend(JSON.stringify({name, prop, data, user, status: 'sub'}))
+                client.onSend(JSON.stringify({name, prop, data, id: test.id, user, edit: data.edit, status: 'edit'}))
+            }
+        }
+    }
+
+    async function sub(name, prop){
+        if(db[name]){
+            const test = db[name].get(prop)
+            if(test && test.user && test.user === user){
+                await db[name].delete(prop)
+                client.onSend(JSON.stringify({name, prop, user, status: 'sub'}))
             }
         }
     }
@@ -112,47 +125,61 @@ export default function(opts){
                 if(datas.status){
                     if(datas.status === 'add'){
                         await db[datas.name].add(datas.data)
+                        client.onMesh(data, iden)
                     } else if(datas.status === 'edit'){
-                        await db[datas.name].update(datas.prop, datas.data)
+                        if(updates.has(datas.id)){
+                            const test = updates.get(datas.id)
+                            if(datas.edit > test){
+                                updates.set(datas.id, datas.edit)
+                                await db[datas.name].update(datas.prop, datas.data)
+                                client.onMesh(data, iden)
+                            }
+                        } else {
+                            updates.set(datas.id, datas.edit)
+                            await db[datas.name].update(datas.prop, datas.data)
+                            client.onMesh(data, iden)
+                        }
                     } else if(datas.status === 'sub'){
                         await db[datas.name].delete(datas.prop)
+                        client.onMesh(data, iden)
                     } else {
                         return
                     }
-                    client.onMesh(data, iden)
                 } else {
                     if(datas.session){
-                        const stamp = datas.stamp ? await db[datas.name].where('stamp').above(datas.stamp).toArray() : null
-                        const edit = datas.edit ? await db[datas.name].where('edit').above(datas.edit).toArray() : null
+                        const stamp = datas.stamp ? await db[datas.name].where('stamp').above(datas.stamp).toArray() : await db[datas.name].where('stamp').toArray()
+                        const edit = datas.edit ? await db[datas.name].where('edit').above(datas.edit).toArray() : await db[datas.name].where('edit').toArray()
                         datas.stamp = stamp
                         datas.edit = edit
                         datas.session = false
                         client.onSend(JSON.stringify(datas), iden)
                     } else {
-                        if(datas.stamp){
-                            for(const check of datas.stamp){
-                                try {
-                                    if(check.user && check.user === user){
-                                        continue
-                                    } else {
-                                        await db[datas.name].put(check)
-                                    }
-                                } catch {
-                                    
+                        const hasStamp = await db[datas.name].toCollection().last()
+                        const hasEdit = await db[datas.name].toCollection().last()
+                        const useStamp = hasStamp || {}
+                        const useEdit = hasEdit || {}
+                        const stamps = useStamp.stamp ? datas.stamp.filter((e) => {return e.stamp > useStamp.stamp}) : datas.stamp
+                        const edits = useEdit.edit ? datas.edit.filter((e) => {return e.edit > useEdit.edit}) : datas.edit
+                        for(const stamp of stamps){
+                            try {
+                                if(stamp.user && stamp.user === user){
+                                    continue
+                                } else {
+                                    await db[datas.name].put(stamp)
                                 }
+                            } catch {
+                                continue
                             }
                         }
-                        if(datas.edit){
-                            for(const checking of datas.edit){
-                                try {
-                                    if(checking.user && checking.user === user){
-                                        continue
-                                    } else {
-                                        await db[datas.name].put(checking)
-                                    }
-                                } catch {
-                                    
+                        for(const edit of edits){
+                            try {
+                                if(edit.user && edit.user === user){
+                                    continue
+                                } else {
+                                    await db[datas.name].put(edit)
                                 }
+                            } catch {
+                                continue
                             }
                         }
                     }
@@ -165,6 +192,8 @@ export default function(opts){
     client.on('message', message)
 
     function quit(){
+        clearInterval(routine)
+        updates.clear()
         client.off('connect', connect)
         client.off('error', err)
         client.off('message', message)
@@ -173,5 +202,5 @@ export default function(opts){
         db.close()
     }
 
-    return {id, db, client, quit, crud: {add, edit, sub}}
+    return {id, db, client, quit, crud: {add, edit, sub, force, clear}}
 }
