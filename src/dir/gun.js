@@ -15,9 +15,9 @@ export default function(opts){
 
     const channel = new Client(opts.url, opts.hash, opts.rtor)
 
-    const connect = (chan) => {console.log('connected: ' + chan.id)}
-    const err = (e) => {console.error(e.id, e)}
-    const disconnect = (chan) => {console.log('disconnected: ' + chan.id)}
+    const connect = (chan) => {console.log('connected: ' + chan)}
+    const err = (e, chan) => {console.error(e, chan)}
+    const disconnect = (chan) => {console.log('disconnected: ' + chan)}
     channel.on('connect', connect)
     channel.on('error', err)
     channel.on('disconnect', disconnect)

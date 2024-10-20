@@ -7,13 +7,13 @@
   import gunFunc from './dir/gun.js'
 
   const database = dexieFunc({debug: true, version: 1, url: 'ws://198.46.188.206:10509/signal', hash: '7e6520e2fe505702ec644226ccb0a8bc467c5a2c', name: 'test', schema: {working: 'id, connection, try'}})
-  const gun = gunFunc({url: 'ws://198.46.188.206:10509/signal', hash: '7e6520e2fe505702ec644226ccb0a8bc467c5a2c', debug: true})
+  const gun = gunFunc({url: 'ws://107.173.15.203:10509/signal', hash: '7e6520e2fe505702ec644226ccb0a8bc467c5a2c', debug: true})
   let test = 0
   setInterval(() => {
     test = test + 1
     gun.get(test + 'testing').put({test: 'works'}).once(console.log)
     database.db.working.add({id: `${test}${Date.now()}`, connection: 'connected', try: 'tried', test})
-  }, 5000)
+  }, 10000)
 </script>
 
 <main>
