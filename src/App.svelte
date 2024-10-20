@@ -2,6 +2,17 @@
   import svelteLogo from './assets/svelte.svg'
   import viteLogo from '/vite.svg'
   import Counter from './lib/Counter.svelte'
+
+  import dexieFunc from './dir/dexie.js'
+  import gunFunc from './dir/gun.js'
+
+  const database = dexieFunc({version: 1, url: 'ws://198.46.188.206:10509/signal', hash: '7e6520e2fe505702ec644226ccb0a8bc467c5a2c', name: 'test', schema: {working: 'id, connection, try'}})
+  const gun = gunFunc({client: database.client})
+  let test = 0
+  setInterval(() => {
+    test = test + 1
+    gun.get('testing' + test).put({test: 'works'}).once(console.log)
+  }, 5000)
 </script>
 
 <main>
