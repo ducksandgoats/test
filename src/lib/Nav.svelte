@@ -1,5 +1,5 @@
 <script>
-    import {Row, Col, Navbar, Nav, NavItem} from '@sveltestrap/sveltestrap'
+    import {Row, Col, Navbar, Nav, NavItem, NavLink} from '@sveltestrap/sveltestrap'
     import {link} from 'svelte-spa-router'
 </script>
 
@@ -8,26 +8,32 @@
         <Navbar color="light" light expand="md" container="md">
             <Nav navbar>
                 <NavItem>
-                    <a href="/" use:link>Home</a>
+                    <NavLink href="#/">Home</NavLink>
+                    <!-- <a href="/" use:link>Home</a> -->
                 </NavItem>
                 <NavItem>
-                    <a href="/dexie" use:link>Dexie</a>
+                    <NavLink href="#/dexie">Dexie</NavLink>
+                    <!-- <a href="/dexie" use:link>Dexie</a> -->
                 </NavItem>
                 <NavItem>
-                    <a href="/gun" use:link>Gun</a>
+                    <NavLink href="#/gun">Gun</NavLink>
+                    <!-- <a href="/gun" use:link>Gun</a> -->
                 </NavItem>
             </Nav>
             <Nav class="ms-auto" navbar>
                 <NavItem>
-                    <a href="/" use:link>Home</a>
+                    <NavLink href="#/msg">Msg</NavLink>
+                    <!-- <a href="/msg" use:link>Msg</a> -->
                 </NavItem>
                 <NavItem>
-                    <a href="/dexie" use:link>Dexie</a>
+                    <NavLink href="#/pubsub">Pubsub</NavLink>
+                    <!-- <a href="/pubsub" use:link>Pubsub</a> -->
                 </NavItem>
                 <NavItem>
-                    <a href="/gun" use:link>Gun</a>
+                    <NavLink href="#/topic">Topic</NavLink>
+                    <!-- <a href="/topic" use:link>Topic</a> -->
                 </NavItem>
-                </Nav>
-          </Navbar>
+            </Nav>
+        </Navbar>
     </Col>
 </Row>
