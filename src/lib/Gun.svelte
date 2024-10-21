@@ -5,8 +5,10 @@
     let arr = []
     let text = ''
     gun.get('test').once((data) => {
-        delete data['_']
-        arr = Object.values(data)
+        if(data){
+            delete data['_']
+            arr = Object.values(data)
+        }
     })
 
     function func(e){

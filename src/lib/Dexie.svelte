@@ -2,7 +2,13 @@
     import {Row, Col, Form, Input, Button} from '@sveltestrap/sveltestrap'
     import {base} from '../dir/init.js'
 
-    let arr = base.db.test.where('text').notEqual('').toArray().map((e) => {return e.text})
+    let arr = []
+    base.db.test.where('text').notEqual('').toArray().then((data) => {
+        console.log(data)
+        arr = data.map((e) => {return e.text})
+    }).catch((data) => {console.error(data)})
+    // console.log(arr)
+    // arr = arr.map((e) => {return e.text})
     let text = ''
     async function func(e){
         e.preventDefault()
