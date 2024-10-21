@@ -7,4 +7,4 @@ const msg = (async () => {return (await fetch('msg://test')).body})()
 const pubsub = (async () => {return (await fetch('pubsub://test')).body})()
 const topic = (async () => {return (await fetch('topic://test')).body})()
 
-export default {base, gun, msg, pubsub, topic}
+export {base, gun, msg, pubsub, topic}
