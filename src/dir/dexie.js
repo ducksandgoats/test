@@ -51,8 +51,18 @@ export default function(opts){
     db.version(opts.version).stores(opts.schema)
 
     db.tables.forEach(async (table) => {
-        const useStamp = await table.where('stamp').notEqual(0).last()
-        const useEdit = await table.where('edit').notEqual(0).last()
+        let useStamp
+        let useEdit
+        try {
+            useStamp = await table.where('stamp').notEqual(0).last()
+        } catch {
+            useStamp = {}
+        }
+        try {
+            useEdit = await table.where('edit').notEqual(0).last()
+        } catch {
+            useEdit = {}
+        }
         client.onSend(JSON.stringify({name: table.name, stamp: useStamp?.stamp, edit: useEdit?.edit, session: true}))
     })
 
@@ -166,15 +176,36 @@ export default function(opts){
                     }
                 } else {
                     if(datas.session){
-                        const stamp = datas.stamp ? await db[datas.name].where('stamp').above(datas.stamp).toArray() : await db[datas.name].where('stamp').toArray()
-                        const edit = datas.edit ? await db[datas.name].where('edit').above(datas.edit).toArray() : await db[datas.name].where('edit').toArray()
+                        let stamp
+                        let edit
+                        try {
+                            stamp = datas.stamp ? await db[datas.name].where('stamp').above(datas.stamp).toArray() : await db[datas.name].where('stamp').toArray()
+                        } catch {
+                            stamp = []
+                        }
+                        try {
+                            edit = datas.edit ? await db[datas.name].where('edit').above(datas.edit).toArray() : await db[datas.name].where('edit').toArray()
+                        } catch {
+                            edit = []
+                        }
                         datas.stamp = stamp
                         datas.edit = edit
                         datas.session = false
                         client.onSend(JSON.stringify(datas), iden)
                     } else {
-                        const hasStamp = await db[datas.name].where('stamp').notEqual(0).last()
-                        const hasEdit = await db[datas.name].where('edit').notEqual(0).last()
+                        let hasStamp
+                        let hasEdit
+
+                        try {
+                            hasStamp = await db[datas.name].where('stamp').notEqual(0).last()
+                        } catch {
+                            hasStamp = {}
+                        }
+                        try {
+                            hasEdit = await db[datas.name].where('edit').notEqual(0).last()
+                        } catch {
+                            hasEdit = {}
+                        }
                         const useStamp = hasStamp?.stamp || 0
                         const useEdit = hasEdit?.edit || 0
                         const stamps = useStamp ? datas.stamp.filter((e) => {return e.stamp > useStamp}) : datas.stamp
