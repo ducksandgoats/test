@@ -18,6 +18,7 @@
     "@sveltestrap/sveltestrap": "^6.2.7",
     "dexie": "^4.0.8",
     "gun": "github:amark/gun",
-    "relay-to-relay": "^1.0.4"
+    "relay-to-relay": "^1.0.4",
+    "svelte-spa-router": "^4.0.1"
   }
 }

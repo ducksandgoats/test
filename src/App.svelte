@@ -1,44 +1,37 @@
 <script>
-  import svelteLogo from './assets/svelte.svg'
-  import viteLogo from '/vite.svg'
-  import Counter from './lib/Counter.svelte'
+  import {Container} from '@sveltestrap/sveltestrap'
+  import Router from 'svelte-spa-router'
+  import Err from './lib/Error.svelte'
+  import Dexie from './lib/Dexie.svelte'
+  import Gun from './lib/Gun.svelte'
+  import Msg from './lib/Msg.svelte'
+  import Pubsub from './lib/Pubsub.svelte'
+  import Topic from './lib/Topic.svelte'
+  import Home from './lib/Home.svelte'
+  import NavBar from './lib/Nav.svelte'
+  const routes = {
+    // Exact path
+    '/': Home,
+    '/dexie': Dexie,
 
-  import dexieFunc from './dir/dexie.js'
-  import gunFunc from './dir/gun.js'
+    // Using named parameters, with last being optional
+    '/gun': Gun,
 
-  const database = dexieFunc({debug: true, version: 1, url: 'ws://198.46.188.206:10509/signal', hash: '7e6520e2fe505702ec644226ccb0a8bc467c5a2c', name: 'test', schema: {working: 'id, connection, try, stamp, edit'}})
-  const gun = gunFunc({url: 'ws://107.173.15.203:10509/signal', hash: '7e6520e2fe505702ec644226ccb0a8bc467c5a2c', debug: true})
-  let test = 0
-  setInterval(() => {
-    test = test + 1
-    gun.get('testing' + test).put({test: 'works'}).once(console.log)
-    database.crud.add('working', {id: `${test}${Date.now()}`, connection: 'connected', try: 'tried', test})
-  }, 5000)
+    // Wildcard parameter
+    '/msg': Msg,
+    '/pubsub': Pubsub,
+    '/topic': Topic,
+
+    // Catch-all
+    // This is optional, but if present it must be the last
+    '*': Err,
+}
 </script>
 
-<main>
-  <div>
-    <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-      <img src={viteLogo} class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer">
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
-  </div>
-  <h1>Vite + Svelte</h1>
-
-  <div class="card">
-    <Counter />
-  </div>
-
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
-</main>
+<Container>
+  <NavBar/>
+  <Router {routes}/>
+</Container>
 
 <style>
   .logo {

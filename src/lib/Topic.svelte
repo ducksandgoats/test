@@ -1,0 +1,47 @@
+<script>
+    import {Row, Col, Form, Input, Button} from '@sveltestrap/sveltestrap'
+    import {topic} from '../dir/init.js'
+
+    let arr = []
+    let text = ''
+
+    async function func(){
+        for await (const message of topic){
+            arr.push(message)
+            arr = arr
+        }
+    }
+
+    func().then(console.log).catch(console.error)
+
+    async function makePost(e){
+        e.preventDefault()
+        if(text){
+            console.log((await fetch('topic://test', {method: 'POST', body: text})).body)
+            arr.push(text)
+            text = ''
+        }
+    }
+</script>
+
+<Row>
+    <Col>
+        <Row>
+            <Col>
+                <Form>
+                    <Input placeholder="Enter a value" bind:value={text}/>
+                    <Button type="submit" on:click={makePost}>Submit</Button>
+                </Form>
+            </Col>
+        </Row>
+        {#if arr.length}
+        {#each arr as post}
+            <Row>
+                <Col>
+                    <p>{post}</p>
+                </Col>
+            </Row>
+        {/each}
+        {/if}
+    </Col>
+</Row>

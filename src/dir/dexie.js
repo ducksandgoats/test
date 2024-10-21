@@ -66,7 +66,7 @@ export default function(opts){
         }
     }, 180000)
 
-    async function add(name, data){
+    async function add(name, data, ret = null){
         if(db[name]){
             if(!data.stamp){
                 data.stamp = Date.now()
@@ -78,28 +78,37 @@ export default function(opts){
                 data.iden = crypto.randomUUID()
             }
             data.edit = 0
-            await db[name].add(data)
+            const test = await db[name].add(data)
             client.onSend(JSON.stringify({name, data, user, stamp: data.stamp, status: 'add'}))
-        }
-    }
-
-    async function edit(name, prop, data){
-        if(db[name]){
-            const test = db[name].get(prop)
-            if(test && test.user && test.user === user){
-                data.edit = Date.now()
-                await db[name].update(prop, data)
-                client.onSend(JSON.stringify({name, prop, data, iden: test.iden, user, edit: data.edit, status: 'edit'}))
+            if(ret){
+                return test
             }
         }
     }
 
-    async function sub(name, prop){
+    async function edit(name, prop, data, ret = null){
         if(db[name]){
             const test = db[name].get(prop)
             if(test && test.user && test.user === user){
-                await db[name].delete(prop)
+                data.edit = Date.now()
+                const test = await db[name].update(prop, data)
+                client.onSend(JSON.stringify({name, prop, data, iden: test.iden, user, edit: data.edit, status: 'edit'}))
+                if(ret){
+                    return test
+                }
+            }
+        }
+    }
+
+    async function sub(name, prop, ret = null){
+        if(db[name]){
+            const test = db[name].get(prop)
+            if(test && test.user && test.user === user){
+                const test = await db[name].delete(prop)
                 client.onSend(JSON.stringify({name, prop, user, status: 'sub'}))
+                if(ret){
+                    return test
+                }
             }
         }
     }
