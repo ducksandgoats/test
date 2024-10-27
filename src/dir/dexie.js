@@ -5,43 +5,29 @@ export default function(opts){
 
     const debug = opts.debug
 
-    function makeUser(){
-        if(opts.user){
-            let test = localStorage.getItem('user')
-            if(test){
-                return test
-            } else {
-                test = crypto.randomUUID()
-                localStorage.setItem('user', test)
-                return test
-            }
-        } else {
-            let test = sessionStorage.getItem('user')
-            if(test){
-                return test
-            } else {
-                test = crypto.randomUUID()
-                sessionStorage.setItem('user', test)
-                return test
-            }
-        }
-    }
+    const force = opts.force === false ? opts.force : true
 
-    const user = makeUser()
+    const user = localStorage.getItem('user') || (() => {const test = crypto.randomUUID();localStorage.setItem('user', test);return test;})()
     
     function id(){return crypto.randomUUID()}
     
     const client = new Client(opts.url, opts.hash, opts.rtor)
 
     for(const records in opts.schema){
-        const arr = opts.schema[records].split(',')
-        if(!arr.includes('stamp')){
-            arr.push('stamp')
+        const record = opts.schema[records].split(',')
+        if(!record.includes('stamp')){
+            record.push('stamp')
         }
-        if(!arr.includes('edit')){
-            arr.push('edit')
+        if(!record.includes('edit')){
+            record.push('edit')
         }
-        opts.schema[records] = arr.join(',')
+        if(record.includes('iden')){
+            record.splice(record.indexOf('iden'), 1)
+            record.unshift('iden')
+        } else {
+            record.unshift('iden')
+        }
+        opts.schema[records] = record.join(',')
     }
     
     const db = new Dexie(opts.name, {})
@@ -78,18 +64,12 @@ export default function(opts){
 
     async function add(name, data, ret = null){
         if(db[name]){
-            if(!data.stamp){
-                data.stamp = Date.now()
-            }
-            if(!data.user){
-                data.user = user
-            }
-            if(!data.iden){
-                data.iden = crypto.randomUUID()
-            }
+            data.stamp = data.stamp || Date.now()
+            data.user = data.user || user
+            data.iden = data.iden || crypto.randomUUID()
             data.edit = 0
             const test = await db[name].add(data)
-            client.onSend(JSON.stringify({name, data, user, stamp: data.stamp, status: 'add'}))
+            client.onSend(JSON.stringify({name, data, user: data.user, stamp: data.stamp, iden: test, status: 'add'}))
             if(ret){
                 return test
             }
@@ -99,12 +79,12 @@ export default function(opts){
     async function edit(name, prop, data, ret = null){
         if(db[name]){
             const test = db[name].get(prop)
-            if(test && test.user && test.user === user){
+            if(test && test.user === user){
                 data.edit = Date.now()
-                const test = await db[name].update(prop, data)
-                client.onSend(JSON.stringify({name, prop, data, iden: test.iden, user, edit: data.edit, status: 'edit'}))
+                const num = await db[name].update(prop, data)
+                client.onSend(JSON.stringify({name, prop, data, iden: test.iden, user: test.user, edit: data.edit, num, status: 'edit'}))
                 if(ret){
-                    return test
+                    return num
                 }
             }
         }
@@ -112,20 +92,26 @@ export default function(opts){
 
     async function sub(name, prop, ret = null){
         if(db[name]){
-            const test = db[name].get(prop)
-            if(test && test.user && test.user === user){
-                const test = await db[name].delete(prop)
-                client.onSend(JSON.stringify({name, prop, user, status: 'sub'}))
-                if(ret){
-                    return test
+            const test = await db[name].get(prop)
+            if(test){
+                if(force){
+                    await db[name].delete(prop)
+                    if(test.user === user){
+                        client.onSend(JSON.stringify({name, prop, user: test.user, status: 'sub'}))
+                        if(ret){
+                            return prop
+                        }
+                    }
+                } else {
+                    if(test.user === user){
+                        await db[name].delete(prop)
+                        client.onSend(JSON.stringify({name, prop, user: test.user, status: 'sub'}))
+                        if(ret){
+                            return prop
+                        }
+                    }
                 }
             }
-        }
-    }
-
-    async function force(name, prop){
-        if(db[name]){
-            await db[name].delete(prop)
         }
     }
 
@@ -147,7 +133,7 @@ export default function(opts){
                 console.log('Received Message: ', typeof(data), data)
             }
             const datas = JSON.parse(data)
-            if(datas.user && datas.user === user){
+            if(datas.user === user){
                 return
             }
             if(db[datas.name]){
@@ -183,53 +169,62 @@ export default function(opts){
                         } catch {
                             stamp = []
                         }
+                        while(stamp.length){
+                            datas.session = false
+                            datas.edit = null
+                            datas.stamp = stamp.splice(stamp.length - 50, 50)
+                            client.onSend(JSON.stringify(datas), iden)
+                        }
                         try {
                             edit = datas.edit ? await db[datas.name].where('edit').above(datas.edit).toArray() : await db[datas.name].where('edit').toArray()
                         } catch {
                             edit = []
                         }
-                        datas.stamp = stamp
-                        datas.edit = edit
-                        datas.session = false
-                        client.onSend(JSON.stringify(datas), iden)
+                        while(edit.length){
+                            datas.session = false
+                            datas.stamp = null
+                            datas.edit = edit.splice(edit.length - 50, 50)
+                            client.onSend(JSON.stringify(datas), iden)
+                        }
                     } else {
-                        let hasStamp
-                        let hasEdit
-
-                        try {
-                            hasStamp = await db[datas.name].where('stamp').notEqual(0).last()
-                        } catch {
-                            hasStamp = {}
-                        }
-                        try {
-                            hasEdit = await db[datas.name].where('edit').notEqual(0).last()
-                        } catch {
-                            hasEdit = {}
-                        }
-                        const useStamp = hasStamp?.stamp || 0
-                        const useEdit = hasEdit?.edit || 0
-                        const stamps = useStamp ? datas.stamp.filter((e) => {return e.stamp > useStamp}) : datas.stamp
-                        const edits = useEdit ? datas.edit.filter((e) => {return e.edit > useEdit}) : datas.edit
-                        for(const stamp of stamps){
+                        if(datas.stamp){
+                            let hasStamp
                             try {
-                                if(stamp.user && stamp.user === user){
-                                    continue
-                                } else {
-                                    await db[datas.name].put(stamp)
-                                }
+                                hasStamp = await db[datas.name].where('stamp').notEqual(0).last()
                             } catch {
-                                continue
+                                hasStamp = {}
+                            }
+                            const stamps = hasStamp?.stamp ? datas.stamp.filter((e) => {return e.stamp > hasStamp.stamp}) : datas.stamp
+                            for(const stamp of stamps){
+                                try {
+                                    if(stamp.user === user){
+                                        continue
+                                    } else {
+                                        await db[datas.name].put(stamp)
+                                    }
+                                } catch {
+                                    continue
+                                }
                             }
                         }
-                        for(const edit of edits){
+                        if(datas.edit){
+                            let hasEdit
                             try {
-                                if(edit.user && edit.user === user){
-                                    continue
-                                } else {
-                                    await db[datas.name].put(edit)
-                                }
+                                hasEdit = await db[datas.name].where('edit').notEqual(0).last()
                             } catch {
-                                continue
+                                hasEdit = {}
+                            }
+                            const edits = hasEdit?.edit ? datas.edit.filter((e) => {return e.edit > hasEdit.edit}) : datas.edit
+                            for(const edit of edits){
+                                try {
+                                    if(edit.user === user){
+                                        continue
+                                    } else {
+                                        await db[datas.name].put(edit)
+                                    }
+                                } catch {
+                                    continue
+                                }
                             }
                         }
                     }
