@@ -3,7 +3,7 @@
     import {base} from '../dir/init.js'
 
     let arr = []
-    base.db.test.where('text').notEqual('').toArray().then((data) => {
+    base.db['test'].where('text').notEqual('').toArray().then((data) => {
         console.log(data)
         arr = data.map((e) => {return e.text})
     }).catch((data) => {console.error(data)})
@@ -14,7 +14,7 @@
         e.preventDefault()
         if(text){
             const testing = await base.crud.add('test', {text}, true)
-            arr.push(await base.db.test.get(testing))
+            arr.push(await base.db['test'].get(testing))
             arr = arr
             text = ''
         }
