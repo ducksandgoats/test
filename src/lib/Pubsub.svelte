@@ -1,12 +1,11 @@
 <script>
     import {Row, Col, Form, Input, Button} from '@sveltestrap/sveltestrap'
-    import {pubsub} from '../dir/init.js'
 
     let arr = []
     let text = ''
 
     async function func(){
-        for await (const message of pubsub){
+        for await (const message of (await fetch('pubsub://test')).body){
             arr.push(message)
             arr = arr
         }

@@ -3,6 +3,21 @@
     import {base} from '../dir/init.js'
 
     let arr = []
+    function handleAdd(id){
+        base.db.get(id).then((data) => {
+            arr.push(data.text)
+            arr = arr
+        }).catch(console.error)
+    }
+    base.on('add', handleAdd)
+    function handleGet(ids){
+        base.db.bulkGet(ids).then((data) => {
+            data = data.map((i) => {return i.text})
+            arr.push(...data)
+            arr = arr
+        }).catch(console.error)
+    }
+    base.on('sync', handleGet)
     base.db.test.where('text').notEqual('').toArray().then((data) => {
         console.log(data)
         arr = data.map((e) => {return e.text})
@@ -13,7 +28,7 @@
     async function func(e){
         e.preventDefault()
         if(text){
-            const testing = await base.crud.add('test', {text}, true)
+            const testing = await base.crud.add('test', {text})
             arr.push((await base.db.test.get(testing)).text)
             arr = arr
             text = ''
