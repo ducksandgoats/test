@@ -5,7 +5,7 @@
     let text = ''
 
     async function func(){
-        for await (const message of await (await fetch('topic://test')).body){
+        for await (const message of (await fetch('topic://test')).body){
             arr.push(message)
             arr = arr
         }
@@ -16,7 +16,7 @@
     async function makePost(e){
         e.preventDefault()
         if(text){
-            console.log(await (await fetch('topic://test', {method: 'POST', body: text})).body)
+            console.log(await (await fetch('topic://test', {method: 'POST', body: text})).text())
             arr.push(text)
             text = ''
         }
