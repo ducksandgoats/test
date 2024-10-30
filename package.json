@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@sveltestrap/sveltestrap": "^6.2.7",
-    "dexie-relay": "^4.0.2",
+    "dexie-relay": "^4.0.3",
     "gun-relay": "^1.0.7",
     "svelte-spa-router": "^4.0.1"
   }
