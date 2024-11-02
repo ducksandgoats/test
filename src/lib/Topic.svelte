@@ -5,7 +5,8 @@
     let text = ''
 
     async function func(){
-        for await (const message of (await fetch('topic://test')).body){
+        const test = await fetch('topic://test')
+        for await (const message of test.body){
             arr.push(message)
             arr = arr
         }
