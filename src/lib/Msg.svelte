@@ -7,6 +7,7 @@
     async function func(){
         const test = await fetch('msg://test')
         for await (const message of test.body){
+            console.log(message)
             arr.push(message)
             arr = arr
         }
