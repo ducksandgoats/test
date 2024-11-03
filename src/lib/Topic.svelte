@@ -20,6 +20,7 @@
             console.log(await (await fetch('topic://test', {method: 'POST', body: text})).text())
             arr.push(text)
             text = ''
+            arr = arr
         }
     }
 </script>
