@@ -5,7 +5,7 @@
     let text = ''
 
     async function func(){
-        const test = await fetch('msg://test')
+        const test = await fetch('msg://testing')
         for await (const message of test.body){
             console.log(message)
             arr.push(message)
@@ -18,7 +18,7 @@
     async function makePost(e){
         e.preventDefault()
         if(text){
-            console.log(await (await fetch('msg://test', {method: 'POST', body: text})).text())
+            console.log(await (await fetch('msg://testing', {method: 'POST', body: text})).text())
             arr.push(text)
             text = ''
             arr = arr
