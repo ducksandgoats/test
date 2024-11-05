@@ -9,6 +9,9 @@
   import Topic from './lib/Topic.svelte'
   import Home from './lib/Home.svelte'
   import NavBar from './lib/Nav.svelte'
+  import VidMsg from './lib/VidMsg.svelte'
+  import VidPubsub from './lib/VidPubsub.svelte'
+  import VidTopic from './lib/VidTopic.svelte'
   const routes = {
     // Exact path
     '/': Home,
@@ -21,6 +24,9 @@
     '/msg': Msg,
     '/pubsub': Pubsub,
     '/topic': Topic,
+    '/vidmsg': VidMsg,
+    '/vidpubsub': VidPubsub,
+    '/vidtopic': VidTopic,
 
     // Catch-all
     // This is optional, but if present it must be the last

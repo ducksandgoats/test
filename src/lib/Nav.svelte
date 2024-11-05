@@ -33,6 +33,18 @@
                     <NavLink href="#/topic">Topic</NavLink>
                     <!-- <a href="/topic" use:link>Topic</a> -->
                 </NavItem>
+                <NavItem>
+                    <NavLink href="#/vidmsg">VidMsg</NavLink>
+                    <!-- <a href="/topic" use:link>Topic</a> -->
+                </NavItem>
+                <NavItem>
+                    <NavLink href="#/vidpubsub">VidPubsub</NavLink>
+                    <!-- <a href="/topic" use:link>Topic</a> -->
+                </NavItem>
+                <NavItem>
+                    <NavLink href="#/vidtopic">VidTopic</NavLink>
+                    <!-- <a href="/topic" use:link>Topic</a> -->
+                </NavItem>
             </Nav>
         </Navbar>
     </Col>
