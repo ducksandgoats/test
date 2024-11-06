@@ -1,6 +1,9 @@
 <script>
 	import { onMount } from 'svelte'
+  import {Button} from '@sveltestrap/sveltestrap'
   const id = crypto.randomUUID()
+
+  let videoOrAudio = null
 
   async function func(){
     const test = await fetch('msg://testing')
@@ -9,7 +12,7 @@
       if(obj.proc === 'start'){
           console.log(obj)
           if(!document.getElementById(obj.id)){
-            const makeEl = document.createElement('video')
+            const makeEl = obj.vid ? document.createElement('video') : document.createElement('audio')
             makeEl.id = obj.id
             document.getElementById('test').append(makeEl)
           }
@@ -39,35 +42,39 @@
         console.log(obj)
         const el = document.getElementById(obj.id)
         if(el){
-          el.src = window.URL.createObjectURL(new Blob( [obj.data], {'type': 'video/mp4' }));
+          el.src = window.URL.createObjectURL(new Blob( [obj.data], {'type': obj.mimeType }));
         }
       }
     }
   }
 
-  func().then(console.log).catch(console.error)
+  function initFunc(use){
+    const obj = use ? { audio: true, video: true } : { audio: true, video: false }
+    const vid = obj.video && obj.audio ? true : false
+    func().then(console.log).catch(console.error)
 	let mediaRecorder = null;
 	onMount(async () => {
-		const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+		const stream = await navigator.mediaDevices.getUserMedia(obj);
 		
 		mediaRecorder = new MediaRecorder(stream);
     mediaRecorder.addEventListener('start', async () => {
-      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'start', id, mime: mediaRecorder.mimeType})})).text())
+      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'start', vid, id, mime: mediaRecorder.mimeType})})).text())
     })
     mediaRecorder.addEventListener('resume', async () => {
-      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'resume', id, mime: mediaRecorder.mimeType})})).text())
+      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'resume', vid, id, mime: mediaRecorder.mimeType})})).text())
     })
     mediaRecorder.addEventListener('pause', async () => {
-      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'pause', id, mime: mediaRecorder.mimeType})})).text())
+      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'pause', vid, id, mime: mediaRecorder.mimeType})})).text())
     })
     mediaRecorder.addEventListener('stop', async () => {
-      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'stop', id, mime: mediaRecorder.mimeType})})).text())
+      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'stop', vid, id, mime: mediaRecorder.mimeType})})).text())
     })
 		mediaRecorder.addEventListener('dataavailable', async (ev) => {
 			document.getElementById('own').src = window.URL.createObjectURL(ev.data);
-      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'data', id, mime: mediaRecorder.mimeType, data: await ev.data.text()})})).text())
+      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'data', vid, id, mime: mediaRecorder.mimeType, data: await ev.data.text()})})).text())
     })
 	})
+  }
 	
 	function startSending(){
 		mediaRecorder.start();
@@ -86,6 +93,10 @@
 	}
 
 </script>
+
+{#if videoOrAudio === null}
+  <section><Button on:click={(e) => {console.log(e);videoOrAudio = true;initFunc(videoOrAudio);}}>Video</Button><Button on:click={(e) => {(e) => {console.log(e);videoOrAudio = false;initFunc(videoOrAudio);}}}>Audio</Button></section>
+{/if}
 
 <section>
 	<h2>Video Board</h2>
