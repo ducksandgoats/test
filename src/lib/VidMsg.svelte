@@ -52,20 +52,20 @@
 		
 		mediaRecorder = new MediaRecorder(stream);
     mediaRecorder.addEventListener('start', async () => {
-      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'start', id})})).text())
+      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'start', id, mime: mediaRecorder.mimeType})})).text())
     })
     mediaRecorder.addEventListener('resume', async () => {
-      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'resume', id})})).text())
+      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'resume', id, mime: mediaRecorder.mimeType})})).text())
     })
     mediaRecorder.addEventListener('pause', async () => {
-      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'pause', id})})).text())
+      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'pause', id, mime: mediaRecorder.mimeType})})).text())
     })
     mediaRecorder.addEventListener('stop', async () => {
-      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'stop', id})})).text())
+      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'stop', id, mime: mediaRecorder.mimeType})})).text())
     })
 		mediaRecorder.addEventListener('dataavailable', async (ev) => {
-			document.getElementById('own').src = window.URL.createObjectURL(new Blob( [ev.data], {'type' : 'video/mp4' }));
-      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'data', id, data: await ev.data.text()})})).text())
+			document.getElementById('own').src = window.URL.createObjectURL(ev.data);
+      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({proc: 'data', id, mime: mediaRecorder.mimeType, data: await ev.data.text()})})).text())
     })
 	})
 	
