@@ -1,9 +1,10 @@
 <script>
 	// import { onMount } from 'svelte'
-  import {Button} from '@sveltestrap/sveltestrap'
+  import {Button, Input} from '@sveltestrap/sveltestrap'
   const id = crypto.randomUUID()
 
   let videoOrAudio = null
+  let secondsOfSegment = 5
 
   async function func(){
     const test = await fetch('pubsub://testing')
@@ -105,7 +106,7 @@
 	}
 	
 	function startSending(){
-		mediaRecorder.start();
+		mediaRecorder.start(secondsOfSegment);
 	}
 
 	function stopSending(){
@@ -113,17 +114,20 @@
 	}
 
 	function resumeSending(){
-		mediaRecorder.start();
+		mediaRecorder.resume();
 	}
 
 	function pauseSending(){
-		mediaRecorder.stop();
+		mediaRecorder.pause();
 	}
 
 </script>
 
 {#if videoOrAudio === null}
-  <section><Button on:click={(e) => {console.log(e);videoOrAudio = true;testFunc(videoOrAudio);}}>Video</Button><Button on:click={(e) => {(e) => {console.log(e);videoOrAudio = false;testFunc(videoOrAudio);}}}>Audio</Button></section>
+  <section>
+    <Button on:click={(e) => {console.log(e);videoOrAudio = true;testFunc(videoOrAudio);}}>Video</Button><Button on:click={(e) => {console.log(e);videoOrAudio = false;testFunc(videoOrAudio);}}>Audio</Button>
+    <Input type="number" placeholder="choose how many seconds of data segments to use" min={1} max={9} step={1} bind:value={secondsOfSegment}/>
+  </section>
 {/if}
 
 {#if videoOrAudio === true}
