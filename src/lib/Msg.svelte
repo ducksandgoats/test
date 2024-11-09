@@ -6,6 +6,7 @@
 
     async function func(){
         const test = await fetch('msg://testing')
+        console.log(test.headers.get('X-Hash'))
         for await (const message of test.body){
             console.log(message)
             arr.push(message)
