@@ -14,25 +14,44 @@
 
   media.on('media', (data) => {
     if(data.state){
+      if(data.state === 'start'){
+        const el = document.getElementById(data.user)
+        if(el){
+          el.play()
+        } else {
+          const makeEl = data.kind ? document.createElement('video') : document.createElement('audio')
+          makeEl.id = data.user
+          document.getElementById('test').append(makeEl)
+          makeEl.play()
+        }
+      }
       if(data.state === 'stop'){
         const el = document.getElementById(data.user)
         if(el){
           el.pause()
           el.remove()
         }
-      } else {
-        const makeEl = data.kind ? document.createElement('video') : document.createElement('audio')
-        makeEl.id = data.user
-        document.getElementById('test').append(makeEl)
-        if(data.state === 'play'){
-          makeEl.play()
-        } else if(data.state === 'pause'){
-          makeEl.pause()
-        } else if(data.state === 'start'){
-          makeEl.play()
-          // return
+      }
+      if(data.state === 'resume'){
+        const el = document.getElementById(data.user)
+        if(el){
+          el.play()
         } else {
-          return
+          const makeEl = data.kind ? document.createElement('video') : document.createElement('audio')
+          makeEl.id = data.user
+          document.getElementById('test').append(makeEl)
+          makeEl.play()
+        }
+      }
+      if(data.state === 'pause'){
+        const el = document.getElementById(data.user)
+        if(el){
+          el.pause()
+        } else {
+          const makeEl = data.kind ? document.createElement('video') : document.createElement('audio')
+          makeEl.id = data.user
+          document.getElementById('test').append(makeEl)
+          makeEl.pause()
         }
       }
     }
@@ -45,6 +64,7 @@
         makeEl.id = data.user
         document.getElementById('test').append(makeEl)
         makeEl.src = window.URL.createObjectURL(new Blob( [data.data], {'type': data.mime}))
+        makeEl.play()
       }
     }
   })
@@ -56,8 +76,8 @@
     }
   })
 
-  async function testFunc(use){
-    const obj = use ? { audio: true, video: true } : { audio: true, video: false }
+  async function testFunc(){
+    const obj = videoOrAudio ? { audio: true, video: true } : { audio: true, video: false }
     const vid = obj.video && obj.audio ? true : false
     mediaRecorder = null;
 		const stream = await navigator.mediaDevices.getUserMedia(obj);
@@ -116,7 +136,7 @@
 
 {#if videoOrAudio === null}
   <section>
-    <Button on:click={(e) => {console.log(e);videoOrAudio = true;testFunc(videoOrAudio);}}>Video</Button><Button on:click={(e) => {console.log(e);videoOrAudio = false;testFunc(videoOrAudio);}}>Audio</Button>
+    <Button on:click={(e) => {console.log(e);videoOrAudio = true;testFunc();}}>Video</Button><Button on:click={(e) => {console.log(e);videoOrAudio = false;testFunc();}}>Audio</Button>
     <Input type="number" placeholder="choose how many seconds of data segments to use" min={1} max={9} step={1} bind:value={secondsOfSegment}/>
   </section>
 {/if}
