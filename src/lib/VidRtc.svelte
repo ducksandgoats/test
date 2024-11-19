@@ -10,7 +10,7 @@
   let segments = 0
   let working = false
   let plays = false
-  const mainRoom = 'testing'
+  let mainRoom = 'testing'
 
   media.on('media', (data) => {
     if(data.state){
@@ -46,6 +46,13 @@
         document.getElementById('test').append(makeEl)
         makeEl.src = window.URL.createObjectURL(new Blob( [data.data], {'type': data.mime}))
       }
+    }
+  })
+
+  media.on('expire', (data) => {
+    const el = document.getElementById(data.user)
+    if(el){
+      el.remove()
     }
   })
 
@@ -101,6 +108,11 @@
 	}
 
 </script>
+
+<section>
+  <Input bind:value={mainRoom}></Input>
+  <Button on:click={(e) => {console.log(e);media.add(mainRoom)}}>Add</Button><Button on:click={(e) => {console.log(e);media.sub(mainRoom)}}>Sub</Button>
+</section>
 
 {#if videoOrAudio === null}
   <section>
