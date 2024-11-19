@@ -18,6 +18,7 @@
     "@sveltestrap/sveltestrap": "^6.2.7",
     "dexie-relay": "^5.0.8",
     "gun-relay": "^1.0.9",
+    "media-to-media": "^1.0.2",
     "svelte-spa-router": "^4.0.1"
   }
 }
