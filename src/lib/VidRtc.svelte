@@ -140,7 +140,7 @@
 		mediaRecorder.addEventListener('dataavailable', async (ev) => {
 			document.getElementById('own').src = window.URL.createObjectURL(ev.data);
       segments = segments + 1
-      await media.data(mainRoom, vid, mediaRecorder.mimeType, segments, await ev.data.text())
+      await media.data(mainRoom, vid, mediaRecorder.mimeType, segments, ev.data)
     })
 	}
 	
