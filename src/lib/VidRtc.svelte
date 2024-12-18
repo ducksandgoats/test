@@ -11,8 +11,10 @@
   let working = false
   let plays = false
   let mainRoom = 'testing'
+  let opt = 'none'
+  let save = null
 
-  media.on('media', (data) => {
+  media.on('media', async (data) => {
     if(data.state){
       if(data.state === 'start'){
         const el = document.getElementById(data.user)
@@ -24,12 +26,39 @@
           document.getElementById('test').append(makeEl)
           makeEl.play()
         }
+        if(save){
+          if(!save[data.id]){
+            save[data.id] = {}
+          }
+          if(!save[data.id][data.user]){
+            save[data.id][data.user] = ''
+          }
+        }
       }
       if(data.state === 'stop'){
         const el = document.getElementById(data.user)
         if(el){
           el.pause()
           el.remove()
+        }
+        if(save){
+          if(save[data.id]){
+            if(save[data.id][data.user]){
+              try {
+                if(opt === 'bt'){
+                  console.log(await (await fetch(`bt://./${data.id}/${data.user}`, {method: 'POST', body: save[data.id][data.user]})).text())
+                }
+                if(opt === 'ipfs'){
+                  console.log(await (await fetch(`ipfs://./${data.id}/${data.user}`, {method: 'POST', body: save[data.id][data.user]})).text())
+                }
+                if(opt === 'hyper'){
+                  console.log(await (await fetch(`ipfs://_/${data.id}/${data.user}`, {method: 'POST', body: save[data.id][data.user]})).text())
+                }
+              } catch (error) {
+                console.error(error) 
+              }
+            }
+          }
         }
       }
       if(data.state === 'resume'){
@@ -57,14 +86,24 @@
     }
     if(data.segment){
       const el = document.getElementById(data.user)
+      const test = new Blob( [data.data], {'type': data.mime})
       if(el){
-        el.src = window.URL.createObjectURL(new Blob( [data.data], {'type': data.mime}));
+        el.src = window.URL.createObjectURL(test);
       } else {
         const makeEl = data.kind ? document.createElement('video') : document.createElement('audio')
         makeEl.id = data.user
         document.getElementById('test').append(makeEl)
-        makeEl.src = window.URL.createObjectURL(new Blob( [data.data], {'type': data.mime}))
+        makeEl.src = window.URL.createObjectURL(test)
         makeEl.play()
+      }
+      if(save){
+          if(save[data.id]){
+            if(save[data.id][data.user]){
+              save[data.id][data.user] = save[data.id][data.user] + await test.text()
+            } else {
+              save[data.id][data.user] = await test.text()
+            }
+          }
       }
     }
   })
@@ -128,6 +167,27 @@
 	}
 
 </script>
+
+<section>
+  <Input type="select" bind:value={opt}>
+    {#each ['none', 'bt', 'ipfs', 'hyper'] as option}
+      <option>{option}</option>
+    {/each}
+  </Input>
+  <Button on:click={(e) => {
+    console.log(e);
+    if(opt === 'none'){
+      if(save){
+        for(const p in save){
+          delete save[p]
+        }
+      }
+      save = null
+    } else {
+      save = {}
+    }
+    }}>Save</Button>
+</section>
 
 <section>
   <Input bind:value={mainRoom}></Input>

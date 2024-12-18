@@ -45,6 +45,10 @@
                     <NavLink href="#/vidtopic">VidTopic</NavLink>
                     <!-- <a href="/topic" use:link>Topic</a> -->
                 </NavItem>
+                <NavItem>
+                    <NavLink href="#/vidrtc">VidRtc</NavLink>
+                    <!-- <a href="/topic" use:link>Topic</a> -->
+                </NavItem>
             </Nav>
         </Navbar>
     </Col>

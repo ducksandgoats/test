@@ -8,6 +8,8 @@
   let videoOrAudio = null
   let working = false
   let plays = false
+  let opt = 'none'
+  let save = null
 
   async function func(){
     const test = await fetch('msg://testing')
@@ -26,12 +28,34 @@
                 document.getElementById('test').append(makeEl)
                 makeEl.play()
             }
+            if(save){
+              if(!save[obj.user]){
+                save[obj.user] = ''
+              }
+            }
         }
         if(obj.state === 'stop'){
             const el = document.getElementById(obj.user)
             if(el){
                 el.pause()
                 el.remove()
+            }
+            if(save){
+              if(save[obj.user]){
+                try {
+                  if(opt === 'bt'){
+                    console.log(await (await fetch(`bt://./testing/${obj.user}`, {method: 'POST', body: save[obj.user]})).text())
+                  }
+                  if(opt === 'ipfs'){
+                    console.log(await (await fetch(`ipfs://./testing/${obj.user}`, {method: 'POST', body: save[obj.user]})).text())
+                  }
+                  if(opt === 'hyper'){
+                    console.log(await (await fetch(`ipfs://_/testing/${obj.user}`, {method: 'POST', body: save[obj.user]})).text())
+                  }
+                } catch (error) {
+                  console.error(error) 
+                }
+              }
             }
         }
         if(obj.state === 'resume'){
@@ -59,13 +83,23 @@
         }
         if(obj.data){
             const el = document.getElementById(obj.user)
+            const test = new Blob([obj.data], {'type': obj.mime})
             if(el){
-                el.src = window.URL.createObjectURL(new Blob( [obj.data], {'type': obj.mime}));
+                el.src = window.URL.createObjectURL(test);
             } else {
                 const makeEl = obj.kind ? document.createElement('video') : document.createElement('audio')
                 makeEl.id = obj.user
                 document.getElementById('test').append(makeEl)
-                makeEl.src = window.URL.createObjectURL(new Blob( [obj.data], {'type': obj.mime}))
+                makeEl.src = window.URL.createObjectURL(test)
+            }
+            if(save){
+                if(save[obj.user]){
+                  if(save[obj.user]){
+                    save[obj.user] = save[obj.user] + await test.text()
+                  } else {
+                    save[obj.user] = await test.text()
+                  }
+                }
             }
         }
     }
@@ -96,7 +130,7 @@
     })
 		mediaRecorder.addEventListener('dataavailable', async (ev) => {
 			document.getElementById('own').src = window.URL.createObjectURL(ev.data);
-            console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({data: await ev.data.text(), kind: videoOrAudio, user: id, mime: mediaRecorder.mimeType})})).text())
+      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({data: await ev.data.text(), kind: videoOrAudio, user: id, mime: mediaRecorder.mimeType})})).text())
     })
 	}
 	
@@ -123,6 +157,27 @@
 	}
 
 </script>
+
+<section>
+  <Input type="select" bind:value={opt}>
+    {#each ['none', 'bt', 'ipfs', 'hyper'] as option}
+      <option>{option}</option>
+    {/each}
+  </Input>
+  <Button on:click={(e) => {
+    console.log(e);
+    if(opt === 'none'){
+      if(save){
+        for(const p in save){
+          delete save[p]
+        }
+      }
+      save = null
+    } else {
+      save = {}
+    }
+    }}>Save</Button>
+</section>
 
 {#if videoOrAudio === null}
   <section>

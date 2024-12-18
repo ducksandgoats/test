@@ -12,6 +12,7 @@
   import VidMsg from './lib/VidMsg.svelte'
   import VidPubsub from './lib/VidPubsub.svelte'
   import VidTopic from './lib/VidTopic.svelte'
+  import VidRtc from './lib/VidRtc.svelte'
   const routes = {
     // Exact path
     '/': Home,
@@ -27,6 +28,7 @@
     '/vidmsg': VidMsg,
     '/vidpubsub': VidPubsub,
     '/vidtopic': VidTopic,
+    '/vidrtc': VidRtc,
 
     // Catch-all
     // This is optional, but if present it must be the last

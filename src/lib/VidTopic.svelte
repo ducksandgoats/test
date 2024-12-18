@@ -5,6 +5,8 @@
 
   let videoOrAudio = null
   let secondsOfSegment = 5
+  let opt = 'none'
+  let save = null
 
   async function func(){
     const test = await fetch('topic://testing')
@@ -17,12 +19,34 @@
             makeEl.id = obj.id
             document.getElementById('test').append(makeEl)
           }
+          if(save){
+            if(!save[obj.user]){
+              save[obj.user] = ''
+            }
+          }
       }
       if(obj.proc === 'stop'){
         console.log(obj)
         const el = document.getElementById(obj.id)
         if(el){
           el.remove()
+        }
+        if(save){
+          if(save[obj.user]){
+            try {
+              if(opt === 'bt'){
+                console.log(await (await fetch(`bt://./testing/${obj.user}`, {method: 'POST', body: save[obj.user]})).text())
+              }
+              if(opt === 'ipfs'){
+                console.log(await (await fetch(`ipfs://./testing/${obj.user}`, {method: 'POST', body: save[obj.user]})).text())
+              }
+              if(opt === 'hyper'){
+                console.log(await (await fetch(`ipfs://_/testing/${obj.user}`, {method: 'POST', body: save[obj.user]})).text())
+              }
+            } catch (error) {
+              console.error(error) 
+            }
+          }
         }
       }
       if(obj.proc === 'pause'){
@@ -42,8 +66,23 @@
       if(obj.proc === 'data'){
         console.log(obj)
         const el = document.getElementById(obj.id)
+        const test = new Blob([obj.data], {'type': obj.mimeType })
         if(el){
-          el.src = window.URL.createObjectURL(new Blob( [obj.data], {'type': obj.mimeType }));
+          el.src = window.URL.createObjectURL(test);
+        } else {
+          const makeEl = obj.kind ? document.createElement('video') : document.createElement('audio')
+          makeEl.id = obj.user
+          document.getElementById('test').append(makeEl)
+          makeEl.src = window.URL.createObjectURL(test)
+        }
+        if(save){
+          if(save[obj.user]){
+            if(save[obj.user]){
+              save[obj.user] = save[obj.user] + await test.text()
+            } else {
+              save[obj.user] = await test.text()
+            }
+          }
         }
       }
     }
@@ -122,6 +161,27 @@
 	}
 
 </script>
+
+<section>
+  <Input type="select" bind:value={opt}>
+    {#each ['none', 'bt', 'ipfs', 'hyper'] as option}
+      <option>{option}</option>
+    {/each}
+  </Input>
+  <Button on:click={(e) => {
+    console.log(e);
+    if(opt === 'none'){
+      if(save){
+        for(const p in save){
+          delete save[p]
+        }
+      }
+      save = null
+    } else {
+      save = {}
+    }
+    }}>Save</Button>
+</section>
 
 {#if videoOrAudio === null}
   <section>

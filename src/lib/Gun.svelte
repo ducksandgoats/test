@@ -1,6 +1,6 @@
 <script>
     import {Row, Col, Form, Input, Button} from '@sveltestrap/sveltestrap'
-    import {gun} from '../dir/init.js'
+    // import {gun} from '../dir/init.js'
 
     let arr = []
     let text = ''
