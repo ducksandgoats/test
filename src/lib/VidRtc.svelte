@@ -15,6 +15,7 @@
   let save = null
 
   media.on('media', async (data) => {
+    console.log(data)
     if(data.state){
       if(data.state === 'start'){
         const el = document.getElementById(data.user)
@@ -140,12 +141,13 @@
 		mediaRecorder.addEventListener('dataavailable', async (ev) => {
 			document.getElementById('own').src = window.URL.createObjectURL(ev.data);
       segments = segments + 1
+      // await media.data(mainRoom, vid, mediaRecorder.mimeType, segments, await ev.data.text())
       await media.data(mainRoom, vid, mediaRecorder.mimeType, segments, ev.data)
     })
 	}
 	
 	function startSending(){
-		mediaRecorder.start(secondsOfSegment);
+		mediaRecorder.start(secondsOfSegment * 1000);
     working = true
     plays = true
 	}
