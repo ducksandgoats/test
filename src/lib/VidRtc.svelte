@@ -87,7 +87,7 @@
     }
     if(data.segment){
       const el = document.getElementById(data.user)
-      const test = new Blob([new TextEncoder().encode(data.data)], {'type': data.mime})
+      const test = new Blob([new Uint8Array(data.data)], {'type': data.mime})
       if(el){
         el.src = window.URL.createObjectURL(test);
       } else {
@@ -141,7 +141,7 @@
 		mediaRecorder.addEventListener('dataavailable', async (ev) => {
 			document.getElementById('own').src = window.URL.createObjectURL(ev.data);
       segments = segments + 1
-      await media.data(mainRoom, vid, mediaRecorder.mimeType, segments, new TextDecoder().decode(await ev.data.arrayBuffer()))
+      await media.data(mainRoom, vid, mediaRecorder.mimeType, segments, Array.from(new Uint8Array(await ev.data.arrayBuffer())))
     })
 	}
 	

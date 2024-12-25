@@ -83,7 +83,7 @@
         }
         if(obj.data){
             const el = document.getElementById(obj.user)
-            const test = new Blob([obj.data], {'type': obj.mime})
+            const test = new Blob([new TextEncoder().encode(obj.data)], {'type': obj.mime})
             if(el){
                 el.src = window.URL.createObjectURL(test);
             } else {
@@ -130,12 +130,12 @@
     })
 		mediaRecorder.addEventListener('dataavailable', async (ev) => {
 			document.getElementById('own').src = window.URL.createObjectURL(ev.data);
-      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({data: await ev.data.text(), kind: videoOrAudio, user: id, mime: mediaRecorder.mimeType})})).text())
+      console.log(await (await fetch('msg://testing', {method: 'POST', body: JSON.stringify({data: new TextDecoder().decode(new Uint8Array(await ev.data.arrayBuffer())), kind: videoOrAudio, user: id, mime: mediaRecorder.mimeType})})).text())
     })
 	}
 	
 	function startSending(){
-		mediaRecorder.start(secondsOfSegment);
+		mediaRecorder.start(secondsOfSegment * 1000);
     working = true
     plays = true
 	}
